@@ -1,6 +1,6 @@
 module github.com/dfanso/go-echo-boilerplate
 
-go 1.23.4
+go 1.23
 
 require (
 	github.com/go-playground/locales v0.13.0 // indirect
