@@ -1,0 +1,55 @@
+{
+    "info": {
+        "_postman_id": "f36908a1-7826-4ae1-ac61-a86bc83b6c0b",
+        "name": "go-echo-boilerplate",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "User Post",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:8080/api/users",
+                    "path": [
+                        "api",
+                        "users"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\r\n  \"name\": \"Leo Gavin\",\r\n  \"email\": \"dfanso+1@pm.me\",\r\n  \"password\": \"123@Dfanso\",\r\n  \"role\": \"admin\",\r\n  \"status\": \"testing\"\r\n}"
+                }
+            }
+        },
+        {
+            "name": "Health",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8080/api/health",
+                    "path": [
+                        "api",
+                        "health"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                }
+            }
+        }
+    ]
+}
