@@ -3,7 +3,7 @@ package controllers
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/dfanso/go-echo-boilerplate/internal/models"
@@ -48,9 +48,9 @@ func (c *UserController) GetByID(ctx echo.Context) error {
 
 func (c *UserController) Create(ctx echo.Context) error {
 	var user models.User
-	body, _ := ioutil.ReadAll(ctx.Request().Body)
+	body, _ := io.ReadAll(ctx.Request().Body)
 	fmt.Printf("Raw Request Body: %s\n", string(body))
-	ctx.Request().Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	ctx.Request().Body = io.NopCloser(bytes.NewBuffer(body))
 
 	if err := ctx.Bind(&user); err != nil {
 		return utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
