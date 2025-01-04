@@ -11,7 +11,8 @@ type Config struct {
 		Port string
 	}
 	MongoDB struct {
-		URI string
+		URI  string
+		NAME string
 	}
 }
 
@@ -26,6 +27,7 @@ func Load() *Config {
 
 	// MongoDB configuration
 	cfg.MongoDB.URI = getEnv("MONGODB_URI", "mongodb://localhost:27017")
+	cfg.MongoDB.NAME = getEnv("MONGODB_NAME", "Test")
 
 	return cfg
 }

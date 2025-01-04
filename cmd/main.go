@@ -20,7 +20,7 @@ func main() {
 	cfg := config.Load()
 
 	// Initialize MongoDB
-	db, err := database.NewMongoClient(cfg.MongoDB.URI)
+	db, err := database.NewMongoClient(cfg.MongoDB.URI, cfg.MongoDB.NAME)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
