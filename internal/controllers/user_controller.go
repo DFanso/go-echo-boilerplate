@@ -11,6 +11,7 @@ import (
 	"github.com/dfanso/go-echo-boilerplate/pkg/utils"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -63,6 +64,15 @@ func (c *UserController) Create(ctx echo.Context) error {
 			return utils.ErrorResponse(ctx, http.StatusBadRequest, "Validation failed", e)
 		}
 		return utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid user data", err)
+	}
+
+	filter := bson.M{"email": user.Email}
+	existingUser, err := c.service.FindOne(ctx.Request().Context(), filter)
+	if err != nil {
+		return utils.ErrorResponse(ctx, http.StatusInternalServerError, "Error checking for existing user", err)
+	}
+	if existingUser != nil {
+		return utils.ErrorResponse(ctx, http.StatusBadRequest, "User with this email already exists", nil)
 	}
 
 	if err := c.service.Create(ctx.Request().Context(), &user); err != nil {

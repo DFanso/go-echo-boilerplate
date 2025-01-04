@@ -21,6 +21,20 @@ func NewUserRepository(db *qmgo.Database) *UserRepository {
 	}
 }
 
+func (r *UserRepository) FindOne(ctx context.Context, filter interface{}) (*models.User, error) {
+	var user models.User
+
+	err := r.collection.Find(ctx, filter).One(&user)
+	if err != nil {
+		if err == qmgo.ErrNoSuchDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) FindAll(ctx context.Context) ([]models.User, error) {
 	var users []models.User
 	err := r.collection.Find(ctx, bson.M{}).All(&users)
