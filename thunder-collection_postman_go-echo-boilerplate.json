@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "f36908a1-7826-4ae1-ac61-a86bc83b6c0b",
+        "_postman_id": "f6eec498-f964-4656-99ba-0f4a5266d034",
         "name": "go-echo-boilerplate",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": ""
@@ -38,9 +38,8 @@
             "request": {
                 "method": "GET",
                 "url": {
-                    "raw": "http://localhost:8080/api/health",
+                    "raw": "http://localhost:8080/health",
                     "path": [
-                        "api",
                         "health"
                     ],
                     "protocol": "http",
@@ -48,6 +47,89 @@
                         "localhost"
                     ],
                     "port": "8080"
+                }
+            }
+        },
+        {
+            "name": "User Update",
+            "request": {
+                "method": "PUT",
+                "url": {
+                    "raw": "http://localhost:8080/api/users/6778c54e9809cb61c642d022",
+                    "path": [
+                        "api",
+                        "users",
+                        "6778c54e9809cb61c642d022"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\r\n  \"name\": \"Leo Gavin\",\r\n  \"email\": \"dfanso+2@pm.me\",\r\n  \"password\": \"123@Dfanso\",\r\n  \"role\": \"admin\",\r\n  \"status\": \"testing\"\r\n}"
+                }
+            }
+        },
+        {
+            "name": "User Get All",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8080/api/users",
+                    "path": [
+                        "api",
+                        "users"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"name\": \"Leo Gavin\",\n  \"email\": \"dfanso+2@pm.me\",\n  \"password\": \"123@Dfanso\",\n  \"role\": \"admin\",\n  \"status\": \"testing\"\n}"
+                }
+            }
+        },
+        {
+            "name": "User Get One",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8080/api/users/6778c54e9809cb61c642d022",
+                    "path": [
+                        "api",
+                        "users",
+                        "6778c54e9809cb61c642d022"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"name\": \"Leo Gavin\",\n  \"email\": \"dfanso+2@pm.me\",\n  \"password\": \"123@Dfanso\",\n  \"role\": \"admin\",\n  \"status\": \"testing\"\n}"
                 }
             }
         }
