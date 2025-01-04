@@ -10,6 +10,7 @@ import (
 	"github.com/dfanso/go-echo-boilerplate/internal/services"
 	"github.com/dfanso/go-echo-boilerplate/pkg/database"
 
+	customMiddleware "github.com/dfanso/go-echo-boilerplate/pkg/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -26,9 +27,11 @@ func main() {
 
 	// Initialize Echo
 	e := echo.New()
+	e.HideBanner = false // Show the Echo banner
+	e.HidePort = false   // Show the port number
 
 	// Middleware
-	e.Use(middleware.Logger())
+	e.Use(customMiddleware.NewCustomLogger().Middleware())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
@@ -40,6 +43,14 @@ func main() {
 	// Register routes
 	routes.RegisterRoutes(e, userController)
 
+	// Add health check route
+	e.GET("/health", func(c echo.Context) error {
+		return c.JSON(200, map[string]string{
+			"status": "OK",
+		})
+	})
+
 	// Start server
+	log.Printf("Server starting on port %s", cfg.Server.Port)
 	e.Logger.Fatal(e.Start(":" + cfg.Server.Port))
 }

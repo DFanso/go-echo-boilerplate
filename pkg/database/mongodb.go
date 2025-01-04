@@ -16,5 +16,5 @@ func NewMongoClient(uri string) (*qmgo.Database, error) {
 		return nil, err
 	}
 
-	return client.Database("your_database_name"), nil
+	return client.Database("boilerplate"), nil
 }
