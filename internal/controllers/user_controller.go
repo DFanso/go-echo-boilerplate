@@ -1,11 +1,15 @@
 package controllers
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dfanso/go-echo-boilerplate/internal/models"
 	"github.com/dfanso/go-echo-boilerplate/internal/services"
 	"github.com/dfanso/go-echo-boilerplate/pkg/utils"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -44,8 +48,21 @@ func (c *UserController) GetByID(ctx echo.Context) error {
 
 func (c *UserController) Create(ctx echo.Context) error {
 	var user models.User
+	body, _ := ioutil.ReadAll(ctx.Request().Body)
+	fmt.Printf("Raw Request Body: %s\n", string(body))
+	ctx.Request().Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
 	if err := ctx.Bind(&user); err != nil {
 		return utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid request body", err)
+	}
+
+	// Call BeforeCreate which includes validation
+	if err := user.BeforeCreate(); err != nil {
+		// Handle validation errors specifically
+		if e, ok := err.(validation.Errors); ok {
+			return utils.ErrorResponse(ctx, http.StatusBadRequest, "Validation failed", e)
+		}
+		return utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid user data", err)
 	}
 
 	if err := c.service.Create(ctx.Request().Context(), &user); err != nil {
@@ -67,6 +84,16 @@ func (c *UserController) Update(ctx echo.Context) error {
 	}
 
 	user.ID = id
+
+	// Call BeforeUpdate which includes validation
+	if err := user.BeforeUpdate(); err != nil {
+		// Handle validation errors specifically
+		if e, ok := err.(validation.Errors); ok {
+			return utils.ErrorResponse(ctx, http.StatusBadRequest, "Validation failed", e)
+		}
+		return utils.ErrorResponse(ctx, http.StatusBadRequest, "Invalid user data", err)
+	}
+
 	if err := c.service.Update(ctx.Request().Context(), &user); err != nil {
 		return utils.ErrorResponse(ctx, http.StatusInternalServerError, "Failed to update user", err)
 	}

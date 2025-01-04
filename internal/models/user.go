@@ -1,89 +1,107 @@
 package models
 
 import (
-	"errors"
-	"regexp"
 	"time"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	// UserStatusActive represents an active user status
-	UserStatusActive = "active"
-	// UserStatusInactive represents an inactive user status
+	UserStatusActive   = "active"
 	UserStatusInactive = "inactive"
-	// UserStatusBanned represents a banned user status
-	UserStatusBanned = "banned"
+	UserStatusBanned   = "banned"
 
-	// MinPasswordLength is the minimum required password length
 	MinPasswordLength = 8
-	// MaxPasswordLength is the maximum allowed password length
 	MaxPasswordLength = 72
 )
 
-// Role represents user role in the system
 type Role string
 
 const (
-	// RoleAdmin represents administrator role
 	RoleAdmin Role = "admin"
-	// RoleUser represents regular user role
-	RoleUser Role = "user"
+	RoleUser  Role = "user"
 )
 
-// User represents the user model in the system
 type User struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name      string             `json:"name" bson:"name"`
 	Email     string             `json:"email" bson:"email"`
-	Password  string             `json:"-" bson:"password"`
+	Password  string             `json:"password,omitempty" bson:"password"`
 	Role      Role               `json:"role" bson:"role"`
 	Status    string             `json:"status" bson:"status"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
-// Validate checks if the user data is valid
-func (u *User) Validate() error {
-	if u.Name == "" {
-		return errors.New("name is required")
-	}
+func (u User) Validate() error {
+	return validation.ValidateStruct(&u,
+		// Name validation
+		validation.Field(&u.Name,
+			validation.Required.Error("name is required"),
+			validation.Length(2, 50).Error("name must be between 2 and 50 characters"),
+		),
 
-	if u.Email == "" {
-		return errors.New("email is required")
-	}
+		// Email validation
+		validation.Field(&u.Email,
+			validation.Required.Error("email is required"),
+			is.Email.Error("invalid email format"),
+		),
 
-	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	if !emailRegex.MatchString(u.Email) {
-		return errors.New("invalid email format")
-	}
+		// Password validation
+		validation.Field(&u.Password,
+			validation.Required.Error("password is required"),
+			validation.Length(MinPasswordLength, MaxPasswordLength).
+				Error("password must be between 8 and 72 characters"),
+		),
 
-	if u.Password != "" {
-		if len(u.Password) < MinPasswordLength {
-			return errors.New("password must be at least 8 characters long")
-		}
-		if len(u.Password) > MaxPasswordLength {
-			return errors.New("password exceeds maximum length")
-		}
-	}
+		// Role validation
+		validation.Field(&u.Role,
+			validation.Required.Error("role is required"),
+			validation.In(RoleAdmin, RoleUser).Error("invalid role"),
+		),
 
-	if u.Role == "" {
-		u.Role = RoleUser
-	}
-
-	if u.Status == "" {
-		u.Status = UserStatusActive
-	}
-
-	return nil
+		// Status validation
+		validation.Field(&u.Status,
+			validation.Required.Error("status is required"),
+			validation.In(UserStatusActive, UserStatusInactive, UserStatusBanned).
+				Error("invalid status"),
+		),
+	)
 }
 
-// HashPassword creates a bcrypt hash of the password
+func (u *User) ValidateUpdate() error {
+	return validation.ValidateStruct(&u,
+		validation.Field(&u.Name,
+			validation.Required.Error("name is required"),
+			validation.Length(2, 50).Error("name must be between 2 and 50 characters"),
+		),
+		validation.Field(&u.Email,
+			validation.Required.Error("email is required"),
+			is.Email.Error("invalid email format"),
+		),
+		// Password is optional during update
+		validation.Field(&u.Password,
+			validation.When(len(u.Password) > 0, validation.Length(MinPasswordLength, MaxPasswordLength).
+				Error("password must be between 8 and 72 characters")),
+		),
+		validation.Field(&u.Role,
+			validation.Required.Error("role is required"),
+			validation.In(RoleAdmin, RoleUser).Error("invalid role"),
+		),
+		validation.Field(&u.Status,
+			validation.Required.Error("status is required"),
+			validation.In(UserStatusActive, UserStatusInactive, UserStatusBanned).
+				Error("invalid status"),
+		),
+	)
+}
+
 func (u *User) HashPassword() error {
 	if len(u.Password) == 0 {
-		return errors.New("password cannot be empty")
+		return validation.NewError("validation_error", "password cannot be empty")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
@@ -95,25 +113,45 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
-// ComparePassword compares the password with its hash
 func (u *User) ComparePassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
 
-// BeforeCreate handles pre-creation tasks
 func (u *User) BeforeCreate() error {
-	u.CreatedAt = time.Now()
-	u.UpdatedAt = time.Now()
+	// Set timestamps
+	now := time.Now()
+	u.CreatedAt = now
+	u.UpdatedAt = now
 
+	// Set defaults if empty
+	if u.Role == "" {
+		u.Role = RoleUser
+	}
+	if u.Status == "" {
+		u.Status = UserStatusActive
+	}
+
+	// Validate all fields
 	if err := u.Validate(); err != nil {
 		return err
 	}
 
+	// Hash password
 	return u.HashPassword()
 }
 
-// BeforeUpdate handles pre-update tasks
 func (u *User) BeforeUpdate() error {
 	u.UpdatedAt = time.Now()
-	return u.Validate()
+
+	// Validate fields
+	if err := u.ValidateUpdate(); err != nil {
+		return err
+	}
+
+	// Hash password if provided
+	if u.Password != "" {
+		return u.HashPassword()
+	}
+
+	return nil
 }
