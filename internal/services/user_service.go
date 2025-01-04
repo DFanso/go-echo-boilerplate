@@ -18,6 +18,10 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 	}
 }
 
+func (s *UserService) FindOne(ctx context.Context, filter interface{}) (*models.User, error) {
+	return s.repo.FindOne(ctx, filter)
+}
+
 func (s *UserService) GetAll(ctx context.Context) ([]models.User, error) {
 	return s.repo.FindAll(ctx)
 }
