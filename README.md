@@ -50,7 +50,7 @@ A production-ready boilerplate for building RESTful APIs using Go Echo framework
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/go-echo-boilerplate.git
+   git clone https://github.com/dfanso/go-echo-boilerplate.git
    cd go-echo-boilerplate
    ```
 
